@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>AI Deep Scan</title>
+
+<style>
+body {
+  margin: 0;
+  background: black;
+  color: red;
+  font-family: monospace;
+  text-align: center;
+}
+
+/* Matrix nền */
+#matrix {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* Nội dung */
+#main {
+  position: relative;
+  z-index: 1;
+  padding-top: 40px;
+}
+
+video {
+  width: 300px;
+  border: 2px solid red;
+  margin-top: 10px;
+}
+
+#log {
+  height: 150px;
+  overflow: hidden;
+}
+
+#bar {
+  width: 300px;
+  height: 20px;
+  background: #222;
+  margin: 15px auto;
+}
+
+#progress {
+  height: 100%;
+  width: 0%;
+  background: red;
+}
+
+#flash {
+  position: fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  background:white;
+  opacity:0;
+  z-index: 2;
+}
+
+button {
+  padding: 12px 25px;
+  font-size: 16px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+}
+</style>
+
+</head>
+<body>
+
+<canvas id="matrix"></canvas>
+
+<div id="main">
+  <h2>⚠️ AI DEEP SCAN SYSTEM</h2>
+  <p>Bấm vào màn hình để bắt đầu...</p>
+
+  <button id="startBtn">BẮT ĐẦU QUÉT</button>
+
+  <video id="cam" autoplay></video>
+
+  <div id="bar"><div id="progress"></div></div>
+  <div id="log"></div>
+</div>
+
+<div id="flash"></div>
+
+<script>
+
+// MATRIX
+let canvas = document.getElementById("matrix");
+let ctx = canvas.getContext("2d");
+
+function resize(){
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+resize();
+window.onresize = resize;
+
+let letters = "01".split("");
+let fontSize = 16;
+let columns = canvas.width / fontSize;
+let drops = Array(Math.floor(columns)).fill(1);
+
+function draw(){
+  ctx.fillStyle = "rgba(0,0,0,0.05)";
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+
+  ctx.fillStyle = "#0F0";
+  ctx.font = fontSize + "px monospace";
+
+  for(let i=0;i<drops.length;i++){
+    let text = letters[Math.floor(Math.random()*letters.length)];
+    ctx.fillText(text, i*fontSize, drops[i]*fontSize);
+
+    if(drops[i]*fontSize > canvas.height && Math.random()>0.975){
+      drops[i]=0;
+    }
+    drops[i]++;
+  }
+}
+setInterval(draw,33);
+
+// âm thanh
+function beep(){
+  let ctxAudio = new (window.AudioContext || window.webkitAudioContext)();
+  let osc = ctxAudio.createOscillator();
+  osc.connect(ctxAudio.destination);
+  osc.start();
+  osc.stop(ctxAudio.currentTime + 0.1);
+}
+
+// flash
+function flash(){
+  let f = document.getElementById("flash");
+  f.style.opacity = 1;
+  setTimeout(()=> f.style.opacity = 0, 100);
+}
+
+let logs = [
+"📡 Kết nối dữ liệu...",
+"📷 Truy cập camera...",
+"🧠 Đọc suy nghĩ...",
+"📊 Phân tích hành vi...",
+"🔍 Tìm kiếm bí mật...",
+"⚠️ PHÁT HIỆN DỮ LIỆU NHẠY CẢM..."
+];
+
+let secrets = [
+"📵 Lười rep chuỗi 😑",
+"🎬 Giao làm intro thì không làm 🙄",
+"🐢 Người lười nhất khối 🏆",
+"💀 Đang yêu chú bộ đội 😳"
+];
+
+function log(text){
+  let div = document.createElement("div");
+  div.innerText = text;
+  document.getElementById("log").appendChild(div);
+}
+
+function start(){
+if(window.started) return;
+window.started = true;
+
+navigator.mediaDevices.getUserMedia({video:true})
+.then(stream=>{
+  document.getElementById("cam").srcObject = stream;
+
+  let i=0, p=0;
+
+  let run = setInterval(()=>{
+    if(i < logs.length){
+      log(logs[i]);
+      beep();
+      i++;
+    }
+
+    p += 15;
+    document.getElementById("progress").style.width = p + "%";
+
+    if(p == 50) flash();
+
+    if(p >= 100){
+      clearInterval(run);
+      setTimeout(result,1000);
+    }
+  },700);
+})
+.catch(err=>{
+  alert("❌ Lỗi camera: " + err.message);
+});
+}
+
+// 👇 click nút
+document.getElementById("startBtn").addEventListener("click", start);
+
+// 👇 click toàn màn hình (fix 100%)
+document.body.addEventListener("click", start);
+
+function result(){
+  let shuffled = secrets.sort(() => 0.5 - Math.random());
+  let pick = shuffled.slice(0, 3);
+
+  let html = "<h1>💀 BỊ PHÁT HIỆN!</h1>";
+  html += "<h2>👤 Đối tượng: Trịnh Thị Phương Thoa</h2>";
+
+  pick.forEach(s => {
+    html += "<h2>" + s + "</h2>";
+  });
+
+  html += "<p>😆 Troll thôi đừng căng!</p>";
+
+  document.body.innerHTML = html;
+}
+
+</script>
+
+</body>
+</html>
